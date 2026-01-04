@@ -1,0 +1,141 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:Dots_and_boxes.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Dots_and_boxes.Views.MainView"
+             x:DataType="vm:GameViewModel"
+			 >
+  <Design.DataContext>
+    <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+    <vm:GameViewModel />
+  </Design.DataContext>
+	
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<Menu Grid.Row="0" Padding="5">
+			<MenuItem Header="Game">
+				<MenuItem Header="New Game">
+					<MenuItem Header="Small" Command="{Binding NewGameCommand}" CommandParameter="{x:Static model:BoardSize.Small}"/>
+					<MenuItem Header="Medium" Command="{Binding NewGameCommand}" CommandParameter="{x:Static model:BoardSize.Medium}"/>
+					<MenuItem Header="Large" Command="{Binding NewGameCommand}" CommandParameter="{x:Static model:BoardSize.Large}"/>
+				</MenuItem>
+			</MenuItem>
+			<Separator/>
+			<MenuItem Header="Save Game" Command="{Binding SaveGameCommand}"/>
+            <MenuItem Header="Load Game" Command="{Binding LoadGameCommand}"/>
+        </Menu>
+
+		<Border Grid.Row="1" Background="#F0F0F0" Padding="10" BorderBrush="LightGray" BorderThickness="0,0,0,1">
+			<Grid>
+				<TextBlock Text="{Binding StatusMessage}" FontWeight="Bold" FontSize="16" HorizontalAlignment="Left"/>
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+					<TextBlock Text="Player 1: " Foreground="Blue" FontWeight="Bold" FontSize="16"/>
+					<TextBlock Text="{Binding Player1Score}" FontWeight="Bold" FontSize="16" Margin="0,0,20,0"/>
+
+					<TextBlock Text="Player 2: " Foreground="Red" FontWeight="Bold" FontSize="16"/>
+					<TextBlock Text="{Binding Player2Score}" FontWeight="Bold" FontSize="16"/>
+				</StackPanel>
+			</Grid>
+		</Border>
+
+		<Viewbox Grid.Row="2" Margin="20">
+			<Grid Width="{Binding BoardWidth}" Height="{Binding BoardHeight}">
+
+				<ItemsControl ItemsSource="{Binding DisplayBoxes}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<Canvas/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemContainerStyle>
+						<Style TargetType="ContentPresenter">
+							<Setter Property="Canvas.Left" Value="{Binding Col, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+							<Setter Property="Canvas.Top" Value="{Binding Row, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+						</Style>
+					</ItemsControl.ItemContainerStyle>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Border Width="50" Height="50" Margin="4" CornerRadius="4"
+                                    Background="{Binding OwnerId, Converter={StaticResource OwnerToColorConverter}}">
+								<TextBlock Text="{Binding OwnerId}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Foreground="White" FontWeight="Bold" Opacity="0.5"/>
+							</Border>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+
+				<ItemsControl ItemsSource="{Binding DisplayHorizontalLines}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<Canvas/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemContainerStyle>
+						<Style TargetType="ContentPresenter">
+							<Setter Property="Canvas.Left" Value="{Binding Col, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+							<Setter Property="Canvas.Top" Value="{Binding Row, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+						</Style>
+					</ItemsControl.ItemContainerStyle>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Button Command="{Binding DataContext.MakeMoveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding Id}"
+                                    Style="{StaticResource LineButtonStyle}"
+                                    Width="50" Height="10" Margin="0,-5,0,0"/>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+
+				<ItemsControl ItemsSource="{Binding DisplayVerticalLines}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<Canvas/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemContainerStyle>
+						<Style TargetType="ContentPresenter">
+							<Setter Property="Canvas.Left" Value="{Binding Col, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+							<Setter Property="Canvas.Top" Value="{Binding Row, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+						</Style>
+					</ItemsControl.ItemContainerStyle>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Button Command="{Binding DataContext.MakeMoveCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding Id}"
+                                    Style="{StaticResource LineButtonStyle}"
+                                    Width="10" Height="50" Margin="-5,0,0,0"/>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+
+				<ItemsControl ItemsSource="{Binding DisplayDots}">
+					<ItemsControl.ItemsPanel>
+						<ItemsPanelTemplate>
+							<Canvas/>
+						</ItemsPanelTemplate>
+					</ItemsControl.ItemsPanel>
+					<ItemsControl.ItemContainerStyle>
+						<Style TargetType="ContentPresenter">
+							<Setter Property="Canvas.Left" Value="{Binding Col, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+							<Setter Property="Canvas.Top" Value="{Binding Row, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+						</Style>
+					</ItemsControl.ItemContainerStyle>
+					<ItemsControl.ItemTemplate>
+						<DataTemplate>
+							<Ellipse Width="10" Height="10" Fill="Black" Margin="-5,-5,0,0"/>
+						</DataTemplate>
+					</ItemsControl.ItemTemplate>
+				</ItemsControl>
+
+			</Grid>
+		</Viewbox>
+	</Grid>
+</UserControl>

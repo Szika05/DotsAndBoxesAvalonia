@@ -1,0 +1,60 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Dots_and_boxes.ViewModels"
+        Title="Dots and Boxes" Width="800" Height="650">
+
+    <Window.Resources>
+        <local:MultiplierConverter x:Key="MultiplierConverter"/>
+        <local:OwnerToColorConverter x:Key="OwnerToColorConverter"/>
+    </Window.Resources>
+
+    <Design.PreviewWith>
+        <Border Padding="20">
+            </Border>
+    </Design.PreviewWith>
+
+    <Grid RowDefinitions="Auto, Auto, *">
+        <Menu Grid.Row="0">
+            <MenuItem Header="_Game">
+                <MenuItem Header="_New Game">
+                    <MenuItem Header="Small (3x3)" Command="{Binding NewGameCommand}" />
+                </MenuItem>
+            </MenuItem>
+        </Menu>
+
+        <Border Grid.Row="1" Background="#F0F0F0" Padding="10">
+            <DockPanel>
+                <TextBlock Text="{Binding StatusMessage}" FontWeight="Bold" VerticalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock Text="P1 Score: " Foreground="Blue"/>
+                    <TextBlock Text="{Binding Player1Score}" Margin="0,0,10,0"/>
+                    <TextBlock Text="P2 Score: " Foreground="Red"/>
+                    <TextBlock Text="{Binding Player2Score}"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <Viewbox Grid.Row="2">
+            <ItemsControl ItemsSource="{Binding DisplayBoxes}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Width="{Binding BoardWidth}" Height="{Binding BoardHeight}"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.Styles>
+                    <Style Selector="ContentPresenter">
+                        <Setter Property="Canvas.Left" Value="{Binding Col, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+                        <Setter Property="Canvas.Top" Value="{Binding Row, Converter={StaticResource MultiplierConverter}, ConverterParameter=50}"/>
+                    </Style>
+                </ItemsControl.Styles>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Width="50" Height="50" Background="{Binding OwnerId, Converter={StaticResource OwnerToColorConverter}}">
+                             <TextBlock Text="{Binding OwnerId}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Viewbox>
+    </Grid>
+</Window>
