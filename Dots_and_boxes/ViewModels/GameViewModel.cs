@@ -1,7 +1,14 @@
-﻿using Game.Model;
+﻿using Avalonia.Controls;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.Input;
+using Game.Model;
 using Game.Persistence;
-using System.Windows.Input;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+
 
 namespace Dots_and_boxes.ViewModels
 {
@@ -72,10 +79,10 @@ namespace Dots_and_boxes.ViewModels
             _model.TurnChanged += OnTurnChanged;
 
             // Initialize commands
-            MakeMoveCommand = new DelegateCommand(CanExecuteMakeMove, ExecuteMakeMove);
-            NewGameCommand = new DelegateCommand(ExecuteNewGame);
-            LoadGameCommand = new DelegateCommand(async param => await ExecuteLoadGameAsync());
-            SaveGameCommand = new DelegateCommand(async param => await ExecuteSaveGameAsync());
+            MakeMoveCommand = new RelayCommand(OnMove);
+            NewGameCommand = new RelayCommand(OnNewGame);
+            LoadGameCommand = new RelayCommand(OnLoadGame);
+            SaveGameCommand = new RelayCommand(OnSaveGame);
 
             // Initial status update
             _model.NewGame(BoardSize.Small);
@@ -194,36 +201,41 @@ namespace Dots_and_boxes.ViewModels
         /// </summary>
         private async Task ExecuteLoadGameAsync()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "Boxes Game Save (*.box)|*.box|All files (*.*)|*.*",
-                Title = "Load Boxes and Dots Game"
-            };
+            // Access the TopLevel to get the StorageProvider (works on Desktop and Android)
+            var topLevel = GetTopLevel();
+            if (topLevel == null) return;
 
-            if (openFileDialog.ShowDialog() == true)
+            var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Load Boxes and Dots Game",
+                FileTypeFilter = new[] { new FilePickerFileType("Boxes Game Save") { Patterns = new[] { "*.box" } } }
+            });
+
+            if (files.Count > 0)
             {
                 try
                 {
                     StatusMessage = "Loading game...";
-
-                    // The model handles the async loading using the injected data access
-                    await _model.LoadGameAsync(openFileDialog.FileName);
-
-                    // Update UI properties after loading
-                    OnPropertyChanged(nameof(GridSize));
-                    OnPropertyChanged(nameof(Board));
-                    OnPropertyChanged(nameof(Player1Score));
-                    OnPropertyChanged(nameof(Player2Score));
-                    UpdateStatus();
+                    // Use LocalPath for compatibility with your existing model
+                    await _model.LoadGameAsync(files[0].Path.LocalPath);
                     RefreshBoardDisplay();
-
-                    StatusMessage = $"Game successfully loaded.";
+                    StatusMessage = "Game successfully loaded.";
                 }
                 catch (Exception ex)
                 {
                     StatusMessage = $"Error loading game: {ex.Message}";
                 }
             }
+        }
+
+        // Helper to get the current TopLevel (Window or VisualRoot)
+        private TopLevel? GetTopLevel()
+        {
+            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+                return desktop.MainWindow;
+            if (Application.Current?.ApplicationLifetime is ISingleViewApplicationLifetime singleView)
+                return TopLevel.GetTopLevel(singleView.MainView);
+            return null;
         }
 
         /// <summary>
